@@ -56,6 +56,8 @@ function JBMOD:CheckForRestoration()
 	self:GetComps()
 	self:CheckGender()
 
+	self:CheckHead()
+
 	if(self.fppComp:GetLocalPosition().x == 0.0 and self.fppComp:GetLocalPosition().y == 0.0 and self.fppComp:GetLocalPosition().z == 0.0) then
 		self.isTppEnabled = false
 	end
@@ -75,14 +77,12 @@ function JBMOD:CheckForRestoration()
 	end
 
 	if(self.exitCar and (self.timeStamp + 18.0) <= Game.GetTimeSystem():GetGameTimeStamp()) then
-		self:EquipHead()
 		self.exitCar = false
 		self.enterCar = false
 	end
 
 	if(self.enterCar and self.inCar == false and self.isTppEnabled and self.exitCar == false) then
 		self.timeStamp = Game.GetTimeSystem():GetGameTimeStamp()
-		self:EquipHead()
 		self:UpdateCamera()
 		self.exitCar = true
 	end
@@ -138,19 +138,27 @@ function JBMOD:UpdateCamera ()
 	end
 end
 
-function JBMOD:EquipHead()
-	Game.EquipItemOnPlayer(self.headString, "TppHead")
+function JBMOD:CheckHead()
+
+
+	--if(CName.new('player_photomode_head') == tostring(data:GetName())) then
+		--print('photomode equipped')
+	--else
+		--Game.GetTransactionSystem():AddItemToSlot(Game.GetPlayer(), TweakDBID.new("AttachmentSlots.TppHead"), GetSingleton("gameItemID"):FromTDBID(TweakDBID.new(0x04CD94F8, 0x18)), false, ts:GetItemInSlot(Game.GetPlayer(), TweakDBID.new('AttachmentSlots.TppHead')), 'RPl_Scene', false, false)
+	--end
+
+	-- print(tostring(data:GetName()))
+
+	-- 
 end
 
 function JBMOD:ActivateTPP ()
 	self.isTppEnabled = true
-	self:EquipHead()
 	self:UpdateCamera()
 end
 
 function JBMOD:DeactivateTPP ()
 	self.isTppEnabled = false
-	self:EquipHead()
 	self:RestoreFPPView()
 end
 
@@ -176,6 +184,8 @@ JbMod.camViews = { -- JUST REMOVE OR ADD CAMS TO YOUR LIKING!
 
 -- GAME RUNNING
 registerForEvent("onUpdate", function(deltaTime)
+
+
 	if (ImGui.IsKeyDown(string.byte('0'))) then
 		JbMod:Zoom(0.06)
 	end
@@ -197,6 +207,7 @@ registerForEvent("onUpdate", function(deltaTime)
 
 		if (GetAsyncKeyState(0x71)) then -- F2
 			JbMod:SwitchCamTo(JbMod.camActive + 1)
+			Game.EquipItemOnPlayer(self.headString, "TppHead")
 		end
 	end
 
@@ -217,13 +228,13 @@ registerForEvent("onDraw", function()
 		ImGui.SetNextWindowPos(300, 300, ImGuiCond.FirstUseEver)
 
 	    if (ImGui.Begin("JB Third Person Mod")) then
+	    	slotID = TweakDBID.new('AttachmentSlots.TppHead')
+			item = JbMod.transactionComp:GetItemInSlot(JbMod.player, slotID)
+			itemID = item:GetItemID()
+			data = JbMod.transactionComp:GetItemData(JbMod.player, itemID)
 
-	    	clicked = ImGui.Button("Equip / unequip head")
-			if (clicked) then
-				JbMod:EquipHead()
-			end
-
-	      	ImGui.Text("Well hello there, General Kenobi")
+	      	ImGui.Text("CURRENT EQUIPPED: " ..  tostring(data:GetName()))
+	      	ImGui.Text("CURRENT EQUIPPED: " ..  tostring(itemID))
 	      	ImGui.Text("isTppEnabled: " .. tostring(JbMod.isTppEnabled))
 	      	ImGui.Text("genderOverride: " .. tostring(JbMod.genderOverride))
 	      	ImGui.Text("headString: " .. tostring(JbMod.headString))
